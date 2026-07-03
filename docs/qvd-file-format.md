@@ -139,3 +139,17 @@ To read record *r*, field *f*:
 - **Empty strings** are ordinary string symbols (`0x04 0x00`) and are distinct from NULL.
 - **Type byte `0x00`** does not exist; a NUL in symbol-table position only ever
   terminates a preceding string.
+
+## Prior art
+
+Others have independently reverse engineered QVD and their descriptions agree with the
+layout and symbol type bytes above, which is good confirmation that this is how the
+format actually works:
+
+- [PyQvd's format guide](https://pyqvd.readthedocs.io/latest/guide/qvd-file-format.html)
+  (Python reader/writer) — documents the same three-part structure and the five symbol
+  type bytes; it also notes the header terminator is specifically a CRLF followed by
+  the NUL byte. Its description stops short of the bit packing order, the bias/NULL
+  mechanism, and the zero-bit-width edge case covered here.
+- [devinsmith/qvdreader](https://github.com/devinsmith/qvdreader) (C++) — a reader
+  implementation of the same format.
