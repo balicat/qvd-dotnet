@@ -4,13 +4,14 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 ![.NET 8](https://img.shields.io/badge/.NET-8.0-512BD4)
 
-A zero-dependency .NET library and command-line tool for reading **QlikView / Qlik Sense QVD files**, based on my reverse engineering of the undocumented binary format.
+A zero-dependency .NET library and command-line tool for reading **and writing** **QlikView / Qlik Sense QVD files**, based on my reverse engineering of the undocumented binary format.
 
-QVD is Qlik's proprietary columnar storage format. There is no official specification and no official way to read one outside a Qlik product. This project decodes the whole format:
+QVD is Qlik's proprietary columnar storage format. There is no official specification and no official way to read one outside a Qlik product. This project covers the whole format:
 
 - **All five symbol types** — integers, doubles, strings, and both **dual values** (number + display text in one value, e.g. a date serial together with its formatted text), which many QVD readers skip or flatten.
 - **NULL handling** via the format's index *bias* mechanism.
 - **Bit-packed records** — rows are stored as little-endian bit-stuffed indexes into per-field symbol tables, at arbitrary bit widths (a year column takes 6 bits per row, a boolean 1 bit).
+- **A writer, not just a reader** — `QvdWriter` produces QVDs with the same layout QlikView writes, including duals and NULLs, with automatic symbol deduplication and minimal bit widths. As far as I can tell it is the only QVD writer in the .NET ecosystem.
 
 The full reverse-engineered format description lives in [docs/qvd-file-format.md](docs/qvd-file-format.md).
 
@@ -54,6 +55,30 @@ QvdCsv.Write(reader, csv);
 
 Symbol tables are decoded lazily per field and records on demand, so peeking at a few rows of a large file only pays for what you touch.
 
+### Writing
+
+```csharp
+using Qvd;
+
+var writer = new QvdWriter("Sales", "Country", "Amount", "Updated");
+
+writer.AddRecord(
+    QvdValue.FromText("Denmark"),
+    QvdValue.FromDouble(1234.56),
+    QvdValue.FromDateTime(new DateTime(2026, 7, 3, 14, 30, 0))); // dual: serial + text
+
+writer.AddRecord(
+    QvdValue.FromText("Norway"),
+    QvdValue.Null,                                               // NULL (bias-encoded)
+    QvdValue.FromDualInteger(2026, "Y2026"));                    // dual: int + text
+
+writer.Save("sales.qvd");
+```
+
+The writer deduplicates values into symbol tables, computes the narrowest possible bit
+width per field (a constant column costs zero bits per row), and encodes NULLs with the
+same bias convention QlikView uses.
+
 ## CLI
 
 ```
@@ -83,13 +108,13 @@ dotnet build
 dotnet test
 ```
 
-Requires the .NET 8 SDK. No runtime dependencies. The test suite builds synthetic QVD files in memory (a writer-side mirror of the format), so no binary fixtures are checked in.
+Requires the .NET 8 SDK. No runtime dependencies. No binary fixtures are checked in: reader tests decode files produced by an independent low-level byte encoder, and writer tests round-trip through the reader — so the two implementations cross-check each other.
 
 ## Scope and limitations
 
 - Reads standard uncompressed QVDs (the only kind QlikView and Qlik Sense write). A non-empty `Compression` header is rejected explicitly rather than misread.
 - The file is buffered in memory, so files are limited to ~2 GB.
-- Read-only: there is no QVD writer (outside of the in-memory one used by the tests).
+- The writer produces standard uncompressed QVDs following the same layout QlikView writes; every write is round-trip tested against the reader.
 
 ## How the format was reverse engineered
 

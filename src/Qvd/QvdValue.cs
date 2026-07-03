@@ -58,6 +58,20 @@ public readonly struct QvdValue : IEquatable<QvdValue>
     public static QvdValue FromDualDouble(double number, string text) =>
         new(QvdValueKind.DualDouble, number, text ?? throw new ArgumentNullException(nameof(text)));
 
+    /// <summary>
+    /// A date/timestamp as Qlik stores it: a dual with the date serial number
+    /// (days since 1899-12-30, time of day as the fraction) and its formatted text.
+    /// Default format is yyyy-MM-dd, or yyyy-MM-dd HH:mm:ss when there is a time part.
+    /// </summary>
+    public static QvdValue FromDateTime(DateTime value, string? format = null)
+    {
+        double serial = (value - QlikEpoch).TotalDays;
+        format ??= value.TimeOfDay == TimeSpan.Zero ? "yyyy-MM-dd" : "yyyy-MM-dd HH:mm:ss";
+        return FromDualDouble(serial, value.ToString(format, CultureInfo.InvariantCulture));
+    }
+
+    private static readonly DateTime QlikEpoch = new(1899, 12, 30);
+
     public override string ToString() => DisplayText ?? "";
 
     public bool Equals(QvdValue other) =>

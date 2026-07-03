@@ -26,4 +26,20 @@ internal static class BitPacking
         accumulator >>= bitOffset & 7;
         return (int)(accumulator & ((1UL << bitWidth) - 1));
     }
+
+    /// <summary>Writes an unsigned bit field into a bit-packed record (same bit order as <see cref="Extract"/>).</summary>
+    internal static void Write(Span<byte> record, int bitOffset, int bitWidth, int value)
+    {
+        for (int bit = 0; bit < bitWidth; bit++)
+        {
+            if ((value >> bit & 1) != 0)
+            {
+                record[(bitOffset + bit) >> 3] |= (byte)(1 << ((bitOffset + bit) & 7));
+            }
+        }
+    }
+
+    /// <summary>Smallest bit width that can represent every value in [0, maxValue].</summary>
+    internal static int BitsNeeded(int maxValue) =>
+        maxValue <= 0 ? 0 : 32 - System.Numerics.BitOperations.LeadingZeroCount((uint)maxValue);
 }
