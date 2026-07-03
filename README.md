@@ -11,7 +11,7 @@ QVD is Qlik's proprietary columnar storage format. There is no official specific
 - **All five symbol types** — integers, doubles, strings, and both **dual values** (number + display text in one value, e.g. a date serial together with its formatted text), which many QVD readers skip or flatten.
 - **NULL handling** via the format's index *bias* mechanism.
 - **Bit-packed records** — rows are stored as little-endian bit-stuffed indexes into per-field symbol tables, at arbitrary bit widths (a year column takes 6 bits per row, a boolean 1 bit).
-- **A writer, not just a reader** — `QvdWriter` produces QVDs with the same layout QlikView writes, including duals and NULLs, with automatic symbol deduplication and minimal bit widths. As far as I can tell it is the only QVD writer in the .NET ecosystem.
+- **A writer, not just a reader** — `QvdWriter` produces QVDs that QlikView itself loads (verified in QlikView desktop), including duals and NULLs, with automatic symbol deduplication and minimal bit widths. As far as I can tell it is the only QVD writer in the .NET ecosystem.
 
 The full reverse-engineered format description lives in [docs/qvd-file-format.md](docs/qvd-file-format.md).
 
@@ -114,7 +114,7 @@ Requires the .NET 8 SDK. No runtime dependencies. No binary fixtures are checked
 
 - Reads standard uncompressed QVDs (the only kind QlikView and Qlik Sense write). A non-empty `Compression` header is rejected explicitly rather than misread.
 - The file is buffered in memory, so files are limited to ~2 GB.
-- The writer produces standard uncompressed QVDs following the same layout QlikView writes; every write is round-trip tested against the reader.
+- The writer produces standard uncompressed QVDs following the same layout QlikView writes; every write is round-trip tested against the reader, and generated files have been verified to load cleanly in QlikView desktop (duals, dates and NULLs intact).
 
 ## How the format was reverse engineered
 
