@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Qvd</RootNamespace>
+    <AssemblyName>Qvd</AssemblyName>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <Description>Reader for QlikView / Qlik Sense QVD files, based on a reverse engineering of the binary format. Decodes all symbol types including dual values and NULLs.</Description>
+    <Authors>David Linton</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/balicat/qvd-dotnet</RepositoryUrl>
+  </PropertyGroup>
+
+</Project>
