@@ -15,6 +15,11 @@ QVD is Qlik's proprietary columnar storage format. There is no official specific
 
 The full reverse-engineered format description lives in [docs/qvd-file-format.md](docs/qvd-file-format.md).
 
+This project has a sequel: [vortex-dotnet](https://github.com/balicat/vortex-dotnet), a .NET
+reader for the Vortex columnar format, with a
+[benchmark](https://github.com/balicat/vortex-dotnet/blob/main/docs/where-should-each-format-live.md)
+that puts QVD, Parquet and Vortex side by side on ten million rows of energy data.
+
 ## Library
 
 ```csharp
